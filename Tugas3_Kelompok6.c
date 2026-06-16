@@ -4,18 +4,15 @@
 
 #define SIZE 101
 
-// Struktur Node untuk Linked List (Separate Chaining)
-typedef struct Node {
+typedef struct Node { // Struktur Node untuk Linked List 
     char ktm[15];
     char nama[100];
     struct Node* next;
 } Node;
 
-// Array Hash Table
-Node* hashTable[SIZE];
+Node* hashTable[SIZE]; // Array Hash Table
 
-// Inisialisasi hash table
-void inisialisasiTable() {
+void inisialisasiTable() {  // Inisialisasi hash table
     for (int i = 0; i < SIZE; i++) {
         hashTable[i] = NULL;
     }
@@ -25,7 +22,6 @@ int hitungHash(char* ktm) {
     unsigned long hash = 0;
     int posisi = 1;
     
-    // Abaikan prefix "KTM-" karena seragam
     char* ptr = ktm;
     if (strncmp(ktm, "KTM-", 4) == 0) {
         ptr = ktm + 4;
@@ -33,18 +29,14 @@ int hitungHash(char* ktm) {
     
     while (*ptr != '\0') {
         int ascii = *ptr;
-        
         hash = hash * 131 + (ascii * posisi * posisi * posisi);
-        
-        // Operasi XOR untuk menambah keacakan
-        hash = hash ^ (hash >> 8);
-        
+    
+        hash = hash ^ (hash >> 8); // Operasi XOR untuk menambah keacakan
         posisi++;
         ptr++;
     }
     
-    // Wajib modulo dengan ukuran array (101)
-    return hash % SIZE;
+    return hash % SIZE;     // modulo dengan ukuran array (101)
 }
 
 int insert(char* ktm, char* nama) {
@@ -78,7 +70,6 @@ int insert(char* ktm, char* nama) {
     return 1;
 }
 
-// Membaca file data latih
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
@@ -107,9 +98,8 @@ void bacaFile() {
             }
             
             // Menggunakan hasil kembalian insert()
-            // jumlahData hanya bertambah jika data tersebut bukan duplikat
             if (insert(tempKtm, tempNama) == 1) {
-                jumlahData++;
+                jumlahData++; //jumlahData hanya bertambah jika data tersebut bukan duplikat
             } else {
                 gagalData++; // Duplikasi KTM dihitung sebagai gagal/ditolak masuk data baru
             }
@@ -132,8 +122,7 @@ void bacaFile() {
     printf("Gagal memuat %d data (tidak sesuai format/data lebih dari target)\n\n", gagalData);
 }
 
-// Menghitung statistik
-void hitungMetrik() {
+void hitungMetrik() { // Menghitung statistik
     int indeksTerisi = 0;
     int totalCollision = 0;
     int totalData = 0;
@@ -169,7 +158,6 @@ void hitungMetrik() {
     }
 }
 
-// Membebaskan memori
 void bebaskanMemori() {
     for (int i = 0; i < SIZE; i++) {
         Node* curr = hashTable[i];

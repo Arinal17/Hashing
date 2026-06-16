@@ -47,7 +47,7 @@ int insert(char* ktm, char* nama) {
         if (strcmp(curr->ktm, ktm) == 0) {
             strncpy(curr->nama, nama, sizeof(curr->nama) - 1);
             curr->nama[sizeof(curr->nama) - 1] = '\0';
-            return 0;
+            return 2;
         }
         curr = curr->next;
     }
@@ -79,12 +79,13 @@ void bacaFile() {
     
     char tempKtm[15];   
     char tempNama[100]; 
-    int jumlahData = 0;
+    int jumlahDataSukses = 0;
     int gagalData = 0;
     
     while (!feof(file)) {
         int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
+        // Pembilas Buffer
         int c;
         int karakterTersisa = 0;
         while ((c = fgetc(file)) != '\n' && c != EOF) {
@@ -92,16 +93,25 @@ void bacaFile() {
         }
         
         if (hasilKecocokan == 2) {
+            // Jika data kepanjangan/terpotong, langsung hitung gagal
             if (karakterTersisa > 0) {
                 gagalData++;
-                continue; 
+                continue;
             }
             
-            // Menggunakan hasil kembalian insert()
-            if (insert(tempKtm, tempNama) == 1) {
-                jumlahData++; //jumlahData hanya bertambah jika data tersebut bukan duplikat
+            // JIKA KUOTA 500 DATA BARU SUDAH TERPENUHUI
+            if (jumlahDataSukses >= 500) {
+                gagalData++; // Sisa data berformat bagus di bawahnya dihitung sebagai data lebih
+                continue;
+            }
+            
+            int statusInsert = insert(tempKtm, tempNama);
+            if (statusInsert == 1) {
+                jumlahDataSukses++; // Hanya bertambah jika benar-benar data baru dimasukkan
+            } else if (statusInsert == 2) {
+                continue; 
             } else {
-                gagalData++; // Duplikasi KTM dihitung sebagai gagal/ditolak masuk data baru
+                gagalData++;
             }
         } 
         else {
@@ -113,13 +123,8 @@ void bacaFile() {
     
     fclose(file);
     
-    if (jumlahData > 500) {
-        gagalData += (jumlahData - 500);
-        jumlahData = 500;
-    }
-    
-    printf("Sukses memuat %d data dari Data_Latih.txt\n", jumlahData);
-    printf("Gagal memuat %d data (tidak sesuai format/data lebih dari target)\n\n", gagalData);
+    printf("Sukses memuat %d data dari Data_Latih.txt\n", jumlahDataSukses);
+    printf("Gagal memuat %d data (tidak sesuai format/duplikat/data lebih dari target)\n\n", gagalData);
 }
 
 void hitungMetrik() { // Menghitung statistik

@@ -499,6 +499,5 @@ KTM-472D,Putri Firmansyah Lima
 KTM-473E,Rara Perdana Lima
 KTM-474F,Sari Yulian Lima
 KTM-475G,Tika Fauzan Lima
-KTM-772r36yfqdvdhjvd, ghjavchjvayucyuayucayha
-KTM-467Y,Kartika Cahyono Lima
-KTM-467Y,Kartika Cahyono Lima
+KTM-476Y,Kartikan Cahyono Lima
+KTM-477Y,Kartikam Cahyono Lima

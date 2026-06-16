@@ -488,6 +488,7 @@ KTM-461S,Eka Harahap Lima
 KTM-462T,Fika Oktavian Lima
 KTM-463U,Gita Wahyono Lima
 KTM-464V,Hani Effendi Lima
+KTM-464V,Hani Effendi Lima
 KTM-465W,Indah Listiyono Lima
 KTM-466X,Juwita Utomo Lima
 KTM-467Y,Kartika Cahyono Lima
@@ -496,8 +497,9 @@ KTM-469A,Maya Sulistyo Lima
 KTM-470B,Nisa Ramadan Lima
 KTM-471C,Olivia Setiawan Lima
 KTM-472D,Putri Firmansyah Lima
-KTM-473E,Rara Perdana Lima
-KTM-474F,Sari Yulian Lima
-KTM-475G,Tika Fauzan Lima
-KTM-476Y,Kartikan Cahyono Lima
-KTM-477Y,Kartikam Cahyono Lima
+KTM-473D,Putri Firmansyah Lim
+KTM-474D,Putri Firmansyah Limo
+KTM-475D,Putri Firmansyah Limm
+KTM-476D,Putri Firmansyah Limn
+KTM-477D,Putri Firmansyah Limb
+KTM-477D,Putri Firmansyah Limblj

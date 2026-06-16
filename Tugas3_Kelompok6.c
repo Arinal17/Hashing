@@ -36,7 +36,7 @@ int hitungHash(char* ktm) {
         ptr++;
     }
     
-    return hash % SIZE;     // modulo dengan ukuran array (101)
+    return hash % SIZE; // modulo dengan ukuran array (101)
 }
 
 int insert(char* ktm, char* nama) {
@@ -85,7 +85,7 @@ void bacaFile() {
     while (!feof(file)) {
         int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Pembilas Buffer
+        // Pembilas Buffer: Bersihkan sisa karakter/newline yang terpotong di baris aktif saat ini
         int c;
         int karakterTersisa = 0;
         while ((c = fgetc(file)) != '\n' && c != EOF) {
@@ -99,22 +99,29 @@ void bacaFile() {
                 continue;
             }
             
-            // JIKA KUOTA 500 DATA BARU SUDAH TERPENUHUI
+            // JIKA KUOTA 500 DATA UNIK SUDAH TERPENUHUI
             if (jumlahDataSukses >= 500) {
-                gagalData++; // Sisa data berformat bagus di bawahnya dihitung sebagai data lebih
+                gagalData++; // Sisa data berformat bagus di bawahnya dihitung sebagai data lebih (gagal)
                 continue;
             }
             
+            // Eksekusi insert dan cek status kembaliannya
             int statusInsert = insert(tempKtm, tempNama);
+            
             if (statusInsert == 1) {
-                jumlahDataSukses++; // Hanya bertambah jika benar-benar data baru dimasukkan
-            } else if (statusInsert == 2) {
-                continue; 
-            } else {
+                jumlahDataSukses++; // Bertambah jika benar-benar data baru (unik) berhasil masuk
+            } 
+            else if (statusInsert == 2) {
                 gagalData++;
+                // Program tidak menambah jumlahDataSukses, tapi tetap LANJUT membaca baris berikutnya
+                continue; 
+            } 
+            else {
+                gagalData++; // Gagal alokasi memori
             }
         } 
         else {
+            // Jika baris kosong atau rusak yang tidak memenuhi format koma
             if (!feof(file)) {
                 gagalData++;
             }
@@ -124,7 +131,7 @@ void bacaFile() {
     fclose(file);
     
     printf("Sukses memuat %d data dari Data_Latih.txt\n", jumlahDataSukses);
-    printf("Gagal memuat %d data (tidak sesuai format/duplikat/data lebih dari target)\n\n", gagalData);
+    printf("Gagal memuat %d data (tidak sesuai format/kepanjangan/duplikat/data lebih)\n\n", gagalData);
 }
 
 void hitungMetrik() { // Menghitung statistik

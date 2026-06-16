@@ -21,9 +21,6 @@ void inisialisasiTable() {
     }
 }
 
-// ==============================================================
-// FUNGSI HASH YANG DIPERBAIKI (UNTUK MENCAPAI TARGET 100%)
-// ==============================================================
 int hitungHash(char* ktm) {
     unsigned long hash = 0;
     int posisi = 1;
@@ -37,8 +34,6 @@ int hitungHash(char* ktm) {
     while (*ptr != '\0') {
         int ascii = *ptr;
         
-        // Menggunakan posisi pangkat 3 untuk variasi maksimal
-        // dan dikalikan dengan bilangan prima 131
         hash = hash * 131 + (ascii * posisi * posisi * posisi);
         
         // Operasi XOR untuk menambah keacakan
@@ -51,9 +46,7 @@ int hitungHash(char* ktm) {
     // Wajib modulo dengan ukuran array (101)
     return hash % SIZE;
 }
-// ==============================================================
 
-// Memasukkan data ke hash table (Separate Chaining - Insert di Head)
 void insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
     
@@ -114,13 +107,12 @@ void hitungMetrik() {
         }
     }
     
-    // Rumus score sesuai soal
+
     double score = ((double)indeksTerisi / 101) * 
                    (1 - (double)abs(totalCollision - 399) / 500) * 100;
     
     if (score < 0) score = 0;
     
-    // OUTPUT SESUAI YANG DIMINTA SOAL
     printf("==================================================\n");
     printf("Total Tabrakan (Collision)   : %d Kali\n", totalCollision);
     printf("Jumlah Indeks Laci Terisi    : %d dari 101 Slot\n", indeksTerisi);

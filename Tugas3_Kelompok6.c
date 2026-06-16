@@ -83,7 +83,7 @@ void insert(char* ktm, char* nama) {
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-        printf("File tidak ditemukan!\n");
+        printf("File Data_Latih.txt tidak ditemukan!\n");
         return;
     }
     
@@ -91,20 +91,25 @@ void bacaFile() {
     char tempNama[150];
     int jumlahData = 0;
     
-    // VALIDASI pembacaan tepat 2 argumen (KTM & Nama) untuk cegah loop macet
-    // %14 dan %99 memotong string secara otomatis jika input kepanjangan
-    while (fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama) == 2) {
+    // Gunakan feof agar program terus membaca sampai isi file benar-benar habis
+    while (!feof(file)) {
+        // Coba baca format KTM,Nama
+        int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Membuang sisa karakter/newline yang tersisa di baris tersebut
+        // Bersihkan sisa karakter/newline di baris aktif saat ini
         int c;
         while ((c = fgetc(file)) != '\n' && c != EOF);
         
-        insert(tempKtm, tempNama);
-        jumlahData++;
+        // Jika format cocok (bernilai 2), masukkan ke hash table
+        if (hasilKecocokan == 2) {
+            insert(tempKtm, tempNama);
+            jumlahData++;
+        }
+        // Jika format rusak (seperti teks source), loop akan skip baris itu dan lanjut ke baris bawahnya
     }
     
     fclose(file);
-    printf("Sukses memuat %d data.\n\n", jumlahData);
+    printf("Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
 }
 
 // Menghitung statistik

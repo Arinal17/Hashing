@@ -47,16 +47,15 @@ int hitungHash(char* ktm) {
     return hash % SIZE;
 }
 
-void insert(char* ktm, char* nama) {
+int insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
     
-    // Jika KTM sudah ada, update namanya lalu keluar
     Node* curr = hashTable[indeks];
     while (curr != NULL) {
         if (strcmp(curr->ktm, ktm) == 0) {
             strncpy(curr->nama, nama, sizeof(curr->nama) - 1);
             curr->nama[sizeof(curr->nama) - 1] = '\0';
-            return; 
+            return 0;
         }
         curr = curr->next;
     }
@@ -64,19 +63,19 @@ void insert(char* ktm, char* nama) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
         printf("Alokasi memori gagal!\n");
-        return;
+        return 0;
     }
     
-    // Batasi penyalinan string agar tidak overflow
     strncpy(newNode->ktm, ktm, sizeof(newNode->ktm) - 1);
     newNode->ktm[sizeof(newNode->ktm) - 1] = '\0';
     
     strncpy(newNode->nama, nama, sizeof(newNode->nama) - 1);
     newNode->nama[sizeof(newNode->nama) - 1] = '\0';
     
-    // Insert di HEAD
     newNode->next = hashTable[indeks];
     hashTable[indeks] = newNode;
+    
+    return 1;
 }
 
 // Membaca file data latih
@@ -87,34 +86,35 @@ void bacaFile() {
         return;
     }
     
-    char tempKtm[15];   // Pas sesuai ukuran array node asli
-    char tempNama[100]; // Pas sesuai ukuran array node asli
+    char tempKtm[15];   
+    char tempNama[100]; 
     int jumlahData = 0;
     int gagalData = 0;
     
     while (!feof(file)) {
-        // Membatasi fscanf agar hanya membaca maksimal 14 karakter KTM dan 99 karakter Nama
         int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Pembilas Buffer: Bersihkan sisa karakter/newline yang terpotong di baris aktif saat ini
         int c;
         int karakterTersisa = 0;
         while ((c = fgetc(file)) != '\n' && c != EOF) {
-            karakterTersisa++; // Deteksi apakah ada sisa karakter yang terpotong di baris ini
+            karakterTersisa++; 
         }
         
         if (hasilKecocokan == 2) {
-            // Jika ada karakter tersisa di buffer, berarti data asli di file kepanjangan dan terpotong
             if (karakterTersisa > 0) {
                 gagalData++;
-                continue; // Skip, langsung lanjut ke data berikutnya tanpa di-insert
+                continue; 
             }
             
-            insert(tempKtm, tempNama);
-            jumlahData++;
+            // Menggunakan hasil kembalian insert()
+            // jumlahData hanya bertambah jika data tersebut bukan duplikat
+            if (insert(tempKtm, tempNama) == 1) {
+                jumlahData++;
+            } else {
+                gagalData++; // Duplikasi KTM dihitung sebagai gagal/ditolak masuk data baru
+            }
         } 
         else {
-            // Jika baris rusak atau acak yang tidak memiliki format koma (,)
             if (!feof(file)) {
                 gagalData++;
             }
@@ -123,7 +123,6 @@ void bacaFile() {
     
     fclose(file);
     
-    // Proteksi batas maksimal kuota: jika total data sukses menembus target 500, sisanya masuk gagal
     if (jumlahData > 500) {
         gagalData += (jumlahData - 500);
         jumlahData = 500;

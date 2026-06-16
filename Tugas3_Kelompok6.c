@@ -86,7 +86,7 @@ void insert(char* ktm, char* nama) {
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-        printf("[Error] File Data_Latih.txt tidak ditemukan!\n");
+        printf("File Data_Latih.txt tidak ditemukan!\n");
         return;
     }
     
@@ -115,7 +115,7 @@ void bacaFile() {
     }
     
     fclose(file);
-    printf("[INFO] Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
+    printf(" Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
 }
 // ==============================================================
 

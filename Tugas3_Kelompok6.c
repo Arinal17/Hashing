@@ -61,7 +61,7 @@ void insert(char* ktm, char* nama) {
     
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
-        printf("[Error] Alokasi memori gagal!\n");
+        printf(" Alokasi memori gagal!\n");
         return;
     }
     

@@ -50,16 +50,31 @@ int hitungHash(char* ktm) {
 void insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
     
+    // Jika KTM sudah ada, update namanya lalu keluar
+    Node* curr = hashTable[indeks];
+    while (curr != NULL) {
+        if (strcmp(curr->ktm, ktm) == 0) {
+            strncpy(curr->nama, nama, sizeof(curr->nama) - 1);
+            curr->nama[sizeof(curr->nama) - 1] = '\0';
+            return; 
+        }
+        curr = curr->next;
+    }
+    
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
-        printf("[Error] Alokasi memori gagal!\n");
+        printf("Alokasi memori gagal!\n");
         return;
     }
     
-    strcpy(newNode->ktm, ktm);
-    strcpy(newNode->nama, nama);
+    // Batasi penyalinan string agar tidak overflow
+    strncpy(newNode->ktm, ktm, sizeof(newNode->ktm) - 1);
+    newNode->ktm[sizeof(newNode->ktm) - 1] = '\0';
     
-    // Insert di HEAD (lebih efisien)
+    strncpy(newNode->nama, nama, sizeof(newNode->nama) - 1);
+    newNode->nama[sizeof(newNode->nama) - 1] = '\0';
+    
+    // Insert di HEAD
     newNode->next = hashTable[indeks];
     hashTable[indeks] = newNode;
 }
@@ -68,15 +83,19 @@ void insert(char* ktm, char* nama) {
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-        printf("[Error] File Data_Latih.txt tidak ditemukan!\n");
+        printf("File tidak ditemukan!\n");
         return;
     }
     
-    char tempKtm[15];
-    char tempNama[100];
+    char tempKtm[20];
+    char tempNama[150];
     int jumlahData = 0;
     
-    while (fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama) != EOF) {
+    // VALIDASI pembacaan tepat 2 argumen (KTM & Nama) untuk cegah loop macet
+    // %14 dan %99 memotong string secara otomatis jika input kepanjangan
+    while (fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama) == 2) {
+        
+        // Membuang sisa karakter/newline yang tersisa di baris tersebut
         int c;
         while ((c = fgetc(file)) != '\n' && c != EOF);
         
@@ -85,7 +104,7 @@ void bacaFile() {
     }
     
     fclose(file);
-    printf("[INFO] Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
+    printf("Sukses memuat %d data.\n\n", jumlahData);
 }
 
 // Menghitung statistik
@@ -124,7 +143,7 @@ void hitungMetrik() {
     
     // Verifikasi
     if (totalData == indeksTerisi + totalCollision) {
-        printf("[VALID] %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
+        printf("%d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
     }
 }
 

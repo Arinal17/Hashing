@@ -87,35 +87,50 @@ void bacaFile() {
         return;
     }
     
-    char tempKtm[20];
-    char tempNama[150];
+    char tempKtm[15];   // Pas sesuai ukuran array node asli
+    char tempNama[100]; // Pas sesuai ukuran array node asli
     int jumlahData = 0;
+    int gagalData = 0;
     
-    // Gunakan feof agar program terus membaca sampai isi file benar-benar habis
     while (!feof(file)) {
-        // Coba baca format KTM,Nama
+        // Membatasi fscanf agar hanya membaca maksimal 14 karakter KTM dan 99 karakter Nama
         int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Bersihkan sisa karakter/newline di baris aktif saat ini
+        // Pembilas Buffer: Bersihkan sisa karakter/newline yang terpotong di baris aktif saat ini
         int c;
-        while ((c = fgetc(file)) != '\n' && c != EOF);
+        int karakterTersisa = 0;
+        while ((c = fgetc(file)) != '\n' && c != EOF) {
+            karakterTersisa++; // Deteksi apakah ada sisa karakter yang terpotong di baris ini
+        }
         
-        // Jika format cocok (bernilai 2), masukkan ke hash table
         if (hasilKecocokan == 2) {
+            // Jika ada karakter tersisa di buffer, berarti data asli di file kepanjangan dan terpotong
+            if (karakterTersisa > 0) {
+                gagalData++;
+                continue; // Skip, langsung lanjut ke data berikutnya tanpa di-insert
+            }
+            
             insert(tempKtm, tempNama);
             jumlahData++;
+        } 
+        else {
+            // Jika baris rusak atau acak yang tidak memiliki format koma (,)
+            if (!feof(file)) {
+                gagalData++;
+            }
         }
-        // Jika format rusak (seperti teks source), loop akan skip baris itu dan lanjut ke baris bawahnya
     }
     
     fclose(file);
     
-    // Menghitung data yang gagal berdasarkan target awal 500 data
-    int targetTotalData = 500;
-    int gagalData = targetTotalData - jumlahData;
+    // Proteksi batas maksimal kuota: jika total data sukses menembus target 500, sisanya masuk gagal
+    if (jumlahData > 500) {
+        gagalData += (jumlahData - 500);
+        jumlahData = 500;
+    }
     
-    printf("Sukses memuat %d data pertama dari Data_Latih.txt\n", jumlahData);
-    printf("Gagal memuat %d data (tidak sesuai format/lebih dari total data)\n\n", gagalData);
+    printf("Sukses memuat %d data dari Data_Latih.txt\n", jumlahData);
+    printf("Gagal memuat %d data (tidak sesuai format/data lebih dari target)\n\n", gagalData);
 }
 
 // Menghitung statistik

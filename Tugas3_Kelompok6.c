@@ -52,7 +52,7 @@ void insert(char* ktm, char* nama) {
     
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
-        printf("[Error] Alokasi memori gagal!\n");
+        printf("Alokasi memori gagal!\n");
         return;
     }
     
@@ -66,7 +66,7 @@ void insert(char* ktm, char* nama) {
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-        printf("[Error] File Data_Latih.txt tidak ditemukan!\n");
+        printf("File Data_Latih.txt tidak ditemukan!\n");
         return;
     }
     
@@ -142,7 +142,7 @@ void hitungMetrik() {
     printf("==================================================\n");
     
     if (totalData == indeksTerisi + totalCollision) {
-        printf("[VALID] %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
+        printf("informasi: %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
     }
 }
 

@@ -132,7 +132,7 @@ void hitungMetrik() {
         score = 0;
     } else {
         int targetCollision = totalData - indeksTerisi;
-        double rasioSebaran = (double)indeksTerisi / 101;
+        double rasioSebaran = (double)indeksTerisi / SIZE;
         double rasioTabrakan = 1 - (double)abs(totalCollision - targetCollision) / totalData;
         score = rasioSebaran * rasioTabrakan * 100;
         if (score < 0) score = 0;
@@ -141,7 +141,7 @@ void hitungMetrik() {
     printf("==================================================\n");
     printf("Total Data                   : %d\n", totalData);
     printf("Total Tabrakan (Collision)   : %d Kali\n", totalCollision);
-    printf("Jumlah Indeks Laci Terisi    : %d dari 101 Slot\n", indeksTerisi);
+    printf("Jumlah Indeks Laci Terisi    : %d dari %d Slot\n", indeksTerisi, SIZE);
     printf("Collision Ideal (Target)     : %d\n", totalData - indeksTerisi);
     printf("Nilai Score                  : %.2f %%\n", score);
     printf("==================================================\n");

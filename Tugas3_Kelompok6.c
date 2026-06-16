@@ -82,10 +82,13 @@ void bacaFile() {
     int jumlahDataSukses = 0;
     int gagalData = 0;
     
-    while (!feof(file)) {
+    while (1) {
         int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Pembilas Buffer: Bersihkan sisa karakter/newline yang terpotong di baris aktif saat ini
+        if (hasilKecocokan == EOF) {
+            break;
+        }
+        
         int c;
         int karakterTersisa = 0;
         while ((c = fgetc(file)) != '\n' && c != EOF) {
@@ -93,38 +96,31 @@ void bacaFile() {
         }
         
         if (hasilKecocokan == 2) {
-            // Jika data kepanjangan/terpotong, langsung hitung gagal
             if (karakterTersisa > 0) {
                 gagalData++;
                 continue;
             }
             
-            // JIKA KUOTA 500 DATA UNIK SUDAH TERPENUHUI
             if (jumlahDataSukses >= 500) {
-                gagalData++; // Sisa data berformat bagus di bawahnya dihitung sebagai data lebih (gagal)
+                gagalData++;
                 continue;
             }
             
-            // Eksekusi insert dan cek status kembaliannya
             int statusInsert = insert(tempKtm, tempNama);
             
             if (statusInsert == 1) {
-                jumlahDataSukses++; // Bertambah jika benar-benar data baru (unik) berhasil masuk
+                jumlahDataSukses++;
             } 
             else if (statusInsert == 2) {
                 gagalData++;
-                // Program tidak menambah jumlahDataSukses, tapi tetap LANJUT membaca baris berikutnya
-                continue; 
+                continue;
             } 
             else {
-                gagalData++; // Gagal alokasi memori
+                gagalData++;
             }
         } 
         else {
-            // Jika baris kosong atau rusak yang tidak memenuhi format koma
-            if (!feof(file)) {
-                gagalData++;
-            }
+            gagalData++;
         }
     }
     

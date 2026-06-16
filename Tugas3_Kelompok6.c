@@ -4,17 +4,18 @@
 
 #define SIZE 101
 
-// Struktur Node untuk Linked List (Separate Chaining)
+// ==============================================================
+// STRUKTUR NODE (UKURAN EFISIEN)
+// ==============================================================
 typedef struct Node {
-    char ktm[50];
-    char nama[500];
+    char ktm[30];       // 30 byte (cukup untuk KTM-XXXx)
+    char nama[100];    
     struct Node* next;
 } Node;
+// ==============================================================
 
-// Array Hash Table
 Node* hashTable[SIZE];
 
-// Inisialisasi hash table
 void inisialisasiTable() {
     for (int i = 0; i < SIZE; i++) {
         hashTable[i] = NULL;
@@ -28,7 +29,6 @@ int hitungHash(char* ktm) {
     unsigned long hash = 0;
     int posisi = 1;
     
-    // Abaikan prefix "KTM-" karena seragam
     char* ptr = ktm;
     if (strncmp(ktm, "KTM-", 4) == 0) {
         ptr = ktm + 4;
@@ -36,10 +36,8 @@ int hitungHash(char* ktm) {
     
     while (*ptr != '\0') {
         int ascii = *ptr;
-        
         hash = hash * 131 + (ascii * posisi * posisi * posisi);
         hash = hash ^ (hash >> 8);
-        
         posisi++;
         ptr++;
     }
@@ -48,11 +46,9 @@ int hitungHash(char* ktm) {
 }
 // ==============================================================
 
-// Memasukkan data ke hash table
 void insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
     
-    // Cek duplikat
     Node* curr = hashTable[indeks];
     while (curr != NULL) {
         if (strcmp(curr->ktm, ktm) == 0) {
@@ -75,14 +71,10 @@ void insert(char* ktm, char* nama) {
     strncpy(newNode->nama, nama, sizeof(newNode->nama) - 1);
     newNode->nama[sizeof(newNode->nama) - 1] = '\0';
     
-    // Insert di HEAD
     newNode->next = hashTable[indeks];
     hashTable[indeks] = newNode;
 }
 
-// ==============================================================
-// BACA FILE
-// ==============================================================
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
@@ -90,15 +82,13 @@ void bacaFile() {
         return;
     }
     
-    char tempKtm[50];
-    char tempNama[500];
+    char tempKtm[30];
+    char tempNama[200];
     int jumlahData = 0;
     
-    char line[600];
+    char line[250];
     while (fgets(line, sizeof(line), file)) {
-        // Hapus newline (support Windows \r\n dan Unix \n)
         line[strcspn(line, "\r\n")] = '\0';
-        
         if (line[0] == '\0') continue;
         
         char* comma = strchr(line, ',');
@@ -115,13 +105,9 @@ void bacaFile() {
     }
     
     fclose(file);
-    printf(" Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
+    printf("Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
 }
-// ==============================================================
 
-// ==============================================================
-// MENGHITUNG STATISTIK (DENGAN RUMUS DINAMIS)
-// ==============================================================
 void hitungMetrik() {
     int indeksTerisi = 0;
     int totalCollision = 0;
@@ -130,12 +116,10 @@ void hitungMetrik() {
     for (int i = 0; i < SIZE; i++) {
         int count = 0;
         Node* curr = hashTable[i];
-        
         while (curr != NULL) {
             count++;
             curr = curr->next;
         }
-        
         if (count > 0) {
             indeksTerisi++;
             totalCollision += (count - 1);
@@ -143,26 +127,16 @@ void hitungMetrik() {
         }
     }
     
-    // ==========================================================
-    // RUMUS SCORE DINAMIS (Bisa untuk berapa pun jumlah data)
-    // ==========================================================
     double score;
-    
     if (totalData == 0) {
         score = 0;
     } else {
-        // Target collision ideal = totalData - indeksTerisi
         int targetCollision = totalData - indeksTerisi;
-        
-        // Score = (indeksTerisi/101) × (1 - |collision - target|/totalData) × 100%
         double rasioSebaran = (double)indeksTerisi / 101;
         double rasioTabrakan = 1 - (double)abs(totalCollision - targetCollision) / totalData;
-        
         score = rasioSebaran * rasioTabrakan * 100;
-        
         if (score < 0) score = 0;
     }
-    // ==========================================================
     
     printf("==================================================\n");
     printf("Total Data                   : %d\n", totalData);
@@ -172,14 +146,11 @@ void hitungMetrik() {
     printf("Nilai Score                  : %.2f %%\n", score);
     printf("==================================================\n");
     
-    // Verifikasi
     if (totalData == indeksTerisi + totalCollision) {
-        printf("informasi %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
+        printf("info %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
     }
 }
-// ==============================================================
 
-// Membebaskan memori
 void bebaskanMemori() {
     for (int i = 0; i < SIZE; i++) {
         Node* curr = hashTable[i];

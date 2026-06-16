@@ -2,78 +2,92 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 101 // Kapasitas maksimum Hash Table sesuai ketentuan tugas
+#define SIZE 101
 
-// Struktur Node untuk Linked List (Separate Chaining)
 typedef struct Node {
-    char ktm[15];       // Menyimpan token unik e-KTM (Contoh: KTM-001A)
-    char nama[100];     // Menyimpan nama lengkap mahasiswa
-    struct Node* next;  // Pointer ke node berikutnya jika terjadi collision
+    char ktm[15];
+    char nama[100];
+    struct Node* next;
 } Node;
 
-// Array global dari pointer Node yang bertindak sebagai Hash Table
 Node* hashTable[SIZE];
 
-// Fungsi untuk menginisialisasi seluruh slot Hash Table menjadi kosong (NULL)
 void inisialisasiTable() {
     for (int i = 0; i < SIZE; i++) {
         hashTable[i] = NULL;
     }
 }
 
-// FUNGSI HASH OPTIMAL (Mendapatkan sebaran sempurna 101 indeks terisi)
+// ========== FUNGSI HASH YANG DIPERKUAT ==========
 int hitungHash(char* ktm) {
-    unsigned long hash = 0;
-    int p = 31; // Konstanta bilangan prima untuk polynomial rolling hash
+    unsigned long hash1 = 5381;  // Nilai awal (DJB2)
+    unsigned long hash2 = 0;
+    int posisi = 1;
     
-    // Mengabaikan teks "KTM-" di depan karena seragam, fokus pada keunikan di belakang
+    // Abaikan "KTM-" karena seragam
     char* ptr = ktm;
     if (strncmp(ktm, "KTM-", 4) == 0) {
-        ptr = ktm + 4; 
+        ptr = ktm + 4;
     }
     
     while (*ptr != '\0') {
-        hash = (hash * p + *ptr) % SIZE;
+        int ascii = *ptr;
+        
+        // Teknik 1: DJB2 (hash * 33 + ascii) dengan XOR
+        hash1 = ((hash1 << 5) + hash1) ^ ascii;
+        
+        // Teknik 2: Bobot posisi kuadrat
+        hash2 += (ascii * posisi * posisi);
+        
+        // Teknik 3: XOR dengan shifting berdasarkan posisi
+        if (posisi % 2 == 0) {
+            hash1 ^= (ascii << 2);
+        } else {
+            hash1 ^= (ascii >> 1);
+        }
+        
+        // Teknik 4: Kombinasi hash2 setiap 2 karakter
+        if (posisi % 2 == 0) {
+            hash1 ^= hash2;
+        }
+        
         ptr++;
+        posisi++;
     }
     
-    return hash;
+    // Kombinasi final
+    unsigned long final_hash = hash1 ^ (hash2 << 4);
+    
+    return final_hash % SIZE;
 }
+// =================================================
 
-// Fungsi untuk memasukkan data ke Hash Table menggunakan Separate Chaining
 void insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
 
-    // Alokasi memori dinamis untuk node baru
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
-        printf("[Eror] Alokasi memori gagal!\n");
+        printf("[Error] Alokasi memori gagal!\n");
         return;
     }
     strcpy(newNode->ktm, ktm);
     strcpy(newNode->nama, nama);
     newNode->next = NULL;
 
-    // Jika slot indeks masih kosong, pasang sebagai kepala (Head)
     if (hashTable[indeks] == NULL) {
         hashTable[indeks] = newNode;
-    } 
-    // Jika sudah terisi (Collision), sambungkan ke bagian paling ujung (Tail)
-    else {
-        Node* curr = hashTable[indeks];
-        while (curr->next != NULL) {
-            curr = curr->next;
-        }
-        curr->next = newNode;
+    } else {
+        // Insert di HEAD (lebih cepat O(1))
+        newNode->next = hashTable[indeks];
+        hashTable[indeks] = newNode;
     }
 }
 
-// Fungsi untuk membaca berkas eksternal dan mem-parsing data baris per baris
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-        printf("[Eror] File Data_Latih.txt tidak ditemukan!\n");
-        printf("Pastikan file berada di direktori yang sama dengan berkas C ini.\n");
+        printf("[Error] File Data_Latih.txt tidak ditemukan!\n");
+        printf("Pastikan file berada di direktori yang sama.\n");
         return;
     }
 
@@ -81,7 +95,6 @@ void bacaFile() {
     char tempNama[100];
     int jumlahData = 0;
 
-    // Parsing string terformat dipisahkan oleh karakter koma
     while (fscanf(file, " %[^,],%[^\n]\n", tempKtm, tempNama) != EOF) {
         insert(tempKtm, tempNama);
         jumlahData++;
@@ -93,42 +106,45 @@ void bacaFile() {
     printf("==================================================\n\n");
 }
 
-// Fungsi untuk menghitung statistik distribusi dan akurasi skor performa
+// ========== FUNGSI HITUNG METRIK YANG DIPERBAIKI ==========
 void hitungMetrik() {
     int indeksTerisi = 0;
     int totalCollision = 0;
+    int totalData = 0;
 
-    // Lakukan iterasi menyeluruh ke 101 slot laci
     for (int i = 0; i < SIZE; i++) {
-        if (hashTable[i] != NULL) {
-            indeksTerisi++; // Indeks terisi karena Head tidak kosong
-
-            // Hitung sisa elemen di dalam rantai laci tersebut sebagai collision
-            Node* curr = hashTable[i]->next;
-            while (curr != NULL) {
-                totalCollision++;
-                curr = curr->next;
-            }
+        int count = 0;
+        Node* curr = hashTable[i];
+        while (curr != NULL) {
+            count++;
+            curr = curr->next;
+        }
+        if (count > 0) {
+            indeksTerisi++;
+            totalCollision += (count - 1);
+            totalData += count;
         }
     }
 
-    // Kalkulasi Skor Akhir menggunakan rumus objektivitas penilaian di panduan
-    double rasioSebaran = (double)indeksTerisi / 101.0;
-    double rasioTabrakan = 1.0 - (abs(totalCollision - 399) / 399.0);
-    double skorAkhir = (rasioSebaran * 100.0) * rasioTabrakan;
+    // RUMUS YANG BENAR (sesuai soal)
+    double skorAkhir = ((double)indeksTerisi / 101) * 
+                        (1 - (double)abs(totalCollision - 399) / 500) * 100;
 
     if (skorAkhir < 0) skorAkhir = 0.0;
 
-    // Tampilkan rangkuman output laporan metrik ke terminal
     printf("--- LAPORAN METRIK HASIL DISTRIBUSI HASH TABLE ---\n");
     printf("1. Jumlah Indeks Terisi : %d / 101 slot (Target: 101)\n", indeksTerisi);
     printf("2. Total Data Tabrakan  : %d kali  (Target: 399)\n", totalCollision);
     printf("--------------------------------------------------\n");
     printf(">> SKOR AKHIR PERFORMA  : %.2f %% (Target: 100.00%%)\n", skorAkhir);
     printf("--------------------------------------------------\n");
+    
+    // Verifikasi
+    if (totalData == indeksTerisi + totalCollision) {
+        printf("[VALID] %d data = %d terisi + %d collision \n", totalData, indeksTerisi, totalCollision);
+    }
 }
 
-// Fungsi untuk mengosongkan memori (Mencegah Memory Leak)
 void bebaskanMemori() {
     for (int i = 0; i < SIZE; i++) {
         Node* curr = hashTable[i];
@@ -142,17 +158,9 @@ void bebaskanMemori() {
 }
 
 int main() {
-    // 1. Mengosongkan penunjuk wadah tabel
     inisialisasiTable();
-
-    // 2. Membaca file Data_Latih.txt dan mengisi struktur data
     bacaFile();
-
-    // 3. Menghitung dan mencetak statistik performa tim
     hitungMetrik();
-
-    // 4. Bersihkan alokasi memori RAM sebelum aplikasi dihentikan
     bebaskanMemori();
-
     return 0;
 }

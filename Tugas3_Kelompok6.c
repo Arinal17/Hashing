@@ -4,14 +4,17 @@
 
 #define SIZE 101
 
+// Struktur Node untuk Linked List (Separate Chaining)
 typedef struct Node {
-    char ktm[20];
+    char ktm[15];
     char nama[100];
     struct Node* next;
 } Node;
 
+// Array Hash Table
 Node* hashTable[SIZE];
 
+// Inisialisasi hash table
 void inisialisasiTable() {
     for (int i = 0; i < SIZE; i++) {
         hashTable[i] = NULL;
@@ -22,6 +25,7 @@ int hitungHash(char* ktm) {
     unsigned long hash = 0;
     int posisi = 1;
     
+    // Abaikan prefix "KTM-" karena seragam
     char* ptr = ktm;
     if (strncmp(ktm, "KTM-", 4) == 0) {
         ptr = ktm + 4;
@@ -29,23 +33,30 @@ int hitungHash(char* ktm) {
     
     while (*ptr != '\0') {
         int ascii = *ptr;
+        
         hash = hash * 131 + (ascii * posisi * posisi * posisi);
+        
+        // Operasi XOR untuk menambah keacakan
         hash = hash ^ (hash >> 8);
+        
         posisi++;
         ptr++;
     }
     
+    // Wajib modulo dengan ukuran array (101)
     return hash % SIZE;
 }
 
 void insert(char* ktm, char* nama) {
     int indeks = hitungHash(ktm);
     
+    // Jika KTM sudah ada, update namanya lalu keluar
     Node* curr = hashTable[indeks];
     while (curr != NULL) {
         if (strcmp(curr->ktm, ktm) == 0) {
-            strcpy(curr->nama, nama);
-            return;
+            strncpy(curr->nama, nama, sizeof(curr->nama) - 1);
+            curr->nama[sizeof(curr->nama) - 1] = '\0';
+            return; 
         }
         curr = curr->next;
     }
@@ -56,13 +67,19 @@ void insert(char* ktm, char* nama) {
         return;
     }
     
-    strcpy(newNode->ktm, ktm);
-    strcpy(newNode->nama, nama);
+    // Batasi penyalinan string agar tidak overflow
+    strncpy(newNode->ktm, ktm, sizeof(newNode->ktm) - 1);
+    newNode->ktm[sizeof(newNode->ktm) - 1] = '\0';
     
+    strncpy(newNode->nama, nama, sizeof(newNode->nama) - 1);
+    newNode->nama[sizeof(newNode->nama) - 1] = '\0';
+    
+    // Insert di HEAD
     newNode->next = hashTable[indeks];
     hashTable[indeks] = newNode;
 }
 
+// Membaca file data latih
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
@@ -71,45 +88,37 @@ void bacaFile() {
     }
     
     char tempKtm[20];
-    char tempNama[100];
+    char tempNama[150];
     int jumlahData = 0;
     
-    // Baca per baris dengan fgets
-    char line[200];
-    while (fgets(line, sizeof(line), file)) {
-        // Hapus newline di akhir
-        line[strcspn(line, "\n")] = '\0';
+    // Gunakan feof agar program terus membaca sampai isi file benar-benar habis
+    while (!feof(file)) {
+        // Coba baca format KTM,Nama
+        int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Cari koma
-        char* comma = strchr(line, ',');
-        if (comma == NULL) continue;
+        // Bersihkan sisa karakter/newline di baris aktif saat ini
+        int c;
+        while ((c = fgetc(file)) != '\n' && c != EOF);
         
-        // Ambil KTM (sebelum koma)
-        int i = 0;
-        while (line + i < comma && i < 19) {
-            tempKtm[i] = line[i];
-            i++;
+        // Jika format cocok (bernilai 2), masukkan ke hash table
+        if (hasilKecocokan == 2) {
+            insert(tempKtm, tempNama);
+            jumlahData++;
         }
-        tempKtm[i] = '\0';
-        
-        // Ambil Nama (setelah koma)
-        int j = 0;
-        char* namaPtr = comma + 1;
-        while (*namaPtr != '\0' && j < 99) {
-            tempNama[j] = *namaPtr;
-            j++;
-            namaPtr++;
-        }
-        tempNama[j] = '\0';
-        
-        insert(tempKtm, tempNama);
-        jumlahData++;
+        // Jika format rusak (seperti teks source), loop akan skip baris itu dan lanjut ke baris bawahnya
     }
     
     fclose(file);
-    printf(" Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
+    
+    // Menghitung data yang gagal berdasarkan target awal 500 data
+    int targetTotalData = 500;
+    int gagalData = targetTotalData - jumlahData;
+    
+    printf("Sukses memuat %d data pertama dari Data_Latih.txt\n", jumlahData);
+    printf("Gagal memuat %d data (tidak sesuai format/lebih dari total data)\n\n", gagalData);
 }
 
+// Menghitung statistik
 void hitungMetrik() {
     int indeksTerisi = 0;
     int totalCollision = 0;
@@ -118,10 +127,12 @@ void hitungMetrik() {
     for (int i = 0; i < SIZE; i++) {
         int count = 0;
         Node* curr = hashTable[i];
+        
         while (curr != NULL) {
             count++;
             curr = curr->next;
         }
+        
         if (count > 0) {
             indeksTerisi++;
             totalCollision += (count - 1);
@@ -129,10 +140,8 @@ void hitungMetrik() {
         }
     }
     
-    double score = ((double)indeksTerisi / 101) * 
-                   (1 - (double)abs(totalCollision - 399) / 500) * 100;
+    double score = (totalData > 0) ? ((double)indeksTerisi / SIZE) * (1.0 - ((double)abs(totalCollision - (totalData - indeksTerisi)) / totalData)) * 100 : 0;
     
-    if (score < 0) score = 0;
     
     printf("==================================================\n");
     printf("Total Data                   : %d\n", totalData);
@@ -146,6 +155,7 @@ void hitungMetrik() {
     }
 }
 
+// Membebaskan memori
 void bebaskanMemori() {
     for (int i = 0; i < SIZE; i++) {
         Node* curr = hashTable[i];

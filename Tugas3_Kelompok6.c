@@ -86,11 +86,7 @@ void insert(char* ktm, char* nama) {
 void bacaFile() {
     FILE* file = fopen("Data_Latih.txt", "r");
     if (file == NULL) {
-<<<<<<< HEAD
         printf("[Error] File Data_Latih.txt tidak ditemukan!\n");
-=======
-        printf("File Data_Latih.txt tidak ditemukan!\n");
->>>>>>> 2b66c5ac7aebc3616fdd9b01d177467207036a83
         return;
     }
     
@@ -98,7 +94,6 @@ void bacaFile() {
     char tempNama[500];
     int jumlahData = 0;
     
-<<<<<<< HEAD
     char line[600];
     while (fgets(line, sizeof(line), file)) {
         // Hapus newline (support Windows \r\n dan Unix \n)
@@ -114,31 +109,13 @@ void bacaFile() {
         tempKtm[ktmLen] = '\0';
         
         strcpy(tempNama, comma + 1);
-=======
-    // Gunakan feof agar program terus membaca sampai isi file benar-benar habis
-    while (!feof(file)) {
-        // Coba baca format KTM,Nama
-        int hasilKecocokan = fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama);
         
-        // Bersihkan sisa karakter/newline di baris aktif saat ini
-        int c;
-        while ((c = fgetc(file)) != '\n' && c != EOF);
->>>>>>> 2b66c5ac7aebc3616fdd9b01d177467207036a83
-        
-        // Jika format cocok (bernilai 2), masukkan ke hash table
-        if (hasilKecocokan == 2) {
-            insert(tempKtm, tempNama);
-            jumlahData++;
-        }
-        // Jika format rusak (seperti teks source), loop akan skip baris itu dan lanjut ke baris bawahnya
+        insert(tempKtm, tempNama);
+        jumlahData++;
     }
     
     fclose(file);
-<<<<<<< HEAD
     printf("[INFO] Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
-=======
-    printf("Sukses memuat %d data dari Data_Latih.txt\n\n", jumlahData);
->>>>>>> 2b66c5ac7aebc3616fdd9b01d177467207036a83
 }
 // ==============================================================
 
@@ -197,7 +174,7 @@ void hitungMetrik() {
     
     // Verifikasi
     if (totalData == indeksTerisi + totalCollision) {
-        printf("informasi: %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
+        printf("informasi %d data = %d terisi + %d collision\n", totalData, indeksTerisi, totalCollision);
     }
 }
 // ==============================================================

@@ -160,7 +160,7 @@ void hitungMetrik() {
     printf("==================================================\n");
     printf("Total Data                   : %d\n", totalData);
     printf("Total Tabrakan (Collision)   : %d Kali\n", totalCollision);
-    printf("Jumlah Indeks Laci Terisi    : %d dari 101 Slot\n", indeksTerisi);
+    printf("Jumlah Indeks Laci Terisi    : %d dari %d Slot\n", indeksTerisi, SIZE);
     printf("Nilai Score                  : %.2f %%\n", score);
     printf("==================================================\n");
     

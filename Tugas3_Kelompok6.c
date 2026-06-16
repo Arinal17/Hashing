@@ -76,7 +76,10 @@ void bacaFile() {
     char tempNama[100];
     int jumlahData = 0;
     
-    while (fscanf(file, " %[^,],%[^\n]\n", tempKtm, tempNama) != EOF) {
+    while (fscanf(file, " %14[^,],%99[^\r\n]", tempKtm, tempNama) != EOF) {
+        int c;
+        while ((c = fgetc(file)) != '\n' && c != EOF);
+        
         insert(tempKtm, tempNama);
         jumlahData++;
     }
